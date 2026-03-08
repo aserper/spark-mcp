@@ -43,6 +43,22 @@ mcporter config add spark --docker ghcr.io/aserper/spark-mcp:latest
 
 Or via Claude Code's `.mcp.json` — see the [main spark-mcp README](../README.md) for setup.
 
+## Natural Language Usage (OpenClaw/Claude Code)
+
+When using this skill with OpenClaw or Claude Code, you can speak naturally instead of typing commands:
+
+| Natural language | Command equivalent |
+|------------------|-------------------|
+| "Book Hailey for Thursday" | `spark book hailey thursday` |
+| "What classes do we have?" | `spark my-classes` |
+| "List Saturday classes" | `spark list saturday` |
+| "When's our next class?" | `spark next` |
+| "Cancel Hailey's Thursday booking" | `spark cancel <id>` |
+| "Who's enrolled?" | `spark who` |
+| "Book Ily for next Saturday" | `spark book ily "next saturday"` |
+
+The agent handles translating your natural language to the appropriate skill commands.
+
 ## Quick Start
 
 ```bash
