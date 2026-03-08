@@ -156,6 +156,29 @@ Tokens are automatically refreshed when they expire.
 
 All endpoints hit `https://mobileapi.sparkmembership.com/api/student/`. Auth uses Bearer tokens with automatic refresh. See [`api-discovery.md`](api-discovery.md) for the full endpoint reference.
 
+## OpenClaw / Claude Code Skill (Optional)
+
+For a higher-level, natural language interface, install the `spark` skill:
+
+```bash
+# Via mcporter
+mcporter config import spark ./openclaw-skill/SKILL.md
+
+# Or manually copy to your OpenClaw skills directory
+cp -r openclaw-skill ~/.openclaw/skills/spark
+```
+
+Then use natural language commands:
+
+```bash
+spark who                          # Discover family members
+spark book hailey thursday         # Book Hailey for next Thursday
+spark bulk "ily saturdays 4 weeks" # Bulk book Saturdays
+spark my-classes                   # Show current bookings
+```
+
+See [openclaw-skill/SKILL.md](openclaw-skill/SKILL.md) for full documentation.
+
 ## Requirements
 
 - Docker (preferred), or Python 3.11+
