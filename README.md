@@ -1,3 +1,5 @@
+![spark-mcp logo](logo.png)
+
 # spark-mcp
 
 MCP server for the [Spark Membership](https://sparkmembership.com/) platform — a CRM used by hundreds of martial arts studios. Manage class scheduling, bookings, attendance, and more through any MCP client (e.g. Claude Code).
