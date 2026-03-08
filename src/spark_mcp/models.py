@@ -56,6 +56,36 @@ class ClassSchedule(BaseModel):
         )
 
 
+class MyClass(BaseModel):
+    class_roster_id: int = 0
+    class_roster_name: str = ""
+    class_time: str = ""
+    days: str = ""
+    attendee_id: int = 0
+    allow_checkin: bool = False
+    is_virtual_class: bool = False
+    time_start: str = ""
+    time_end: str = ""
+    roster_time_start: str = ""
+    is_checked_in: bool = False
+
+    @classmethod
+    def from_api(cls, data: dict) -> MyClass:
+        return cls(
+            class_roster_id=data.get("classRosterID") or 0,
+            class_roster_name=data.get("classRosterName") or "",
+            class_time=data.get("classTime") or "",
+            days=data.get("days") or "",
+            attendee_id=data.get("classRosterAttendeeID") or 0,
+            allow_checkin=data.get("allowCheckin") or False,
+            is_virtual_class=data.get("isVirtualClass") or False,
+            time_start=data.get("timeStart") or "",
+            time_end=data.get("timeEnd") or "",
+            roster_time_start=data.get("rosterTimeStart") or "",
+            is_checked_in=data.get("isCheckedIn") or False,
+        )
+
+
 class UserInfo(BaseModel):
     contact_id: int = 0
     name: str = ""

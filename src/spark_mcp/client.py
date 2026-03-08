@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 
 import httpx
 
-from .models import ClassSchedule, Token, UserInfo
+from .models import ClassSchedule, MyClass, Token, UserInfo
 
 BASE_URL = "https://mobileapi.sparkmembership.com/api/student/"
 
@@ -163,11 +163,12 @@ class SparkClient:
             return [ClassSchedule.from_api(item) for item in data]
         return []
 
-    async def list_my_classes(self) -> list[ClassSchedule]:
+    async def list_my_classes(self) -> list[MyClass]:
         """Get classes the user is enrolled in."""
         data = await self._request("GET", "classes")
-        if isinstance(data, list):
-            return [ClassSchedule.from_api(item) for item in data]
+        if isinstance(data, dict):
+            classes = data.get("myClasses", [])
+            return [MyClass.from_api(item) for item in classes]
         return []
 
     async def book_class(self, class_roster_id: int, class_date: str, extra_params: dict | None = None) -> dict:
