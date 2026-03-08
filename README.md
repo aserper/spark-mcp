@@ -39,22 +39,48 @@ docker pull ghcr.io/aserper/spark-mcp:latest
 
 ## Finding your Location ID
 
-Every studio on Spark Membership has a numeric location ID. If you don't know yours, ask Claude after configuring the server (leave `SPARK_LOCATION_ID` empty) — or look it up with:
+Every studio on Spark Membership has a numeric location ID. Use the included `find_location.py` script to look it up.
+
+**Search by state code:**
 
 ```bash
-pip install httpx
-python -c "
-import asyncio, httpx
-async def find():
-    base = 'https://mobileapi.sparkmembership.com/api/student/'
-    async with httpx.AsyncClient(base_url=base, timeout=30) as c:
-        state = input('Enter state code (e.g. MA): ').strip().upper()
-        locs = (await c.get(f'auth/locations/{state}', headers={'Accept':'application/json'})).json().get('result',[])
-        for loc in locs:
-            print(f'  {loc[\"id\"]:>6}  {loc[\"name\"]}')
-asyncio.run(find())
-"
+# Docker
+docker run --rm --entrypoint python ghcr.io/aserper/spark-mcp find_location.py MA
+
+# Local
+python find_location.py MA
 ```
+
+**Search by studio name:**
+
+```bash
+# Docker
+docker run --rm --entrypoint python ghcr.io/aserper/spark-mcp find_location.py "jiu jitsu"
+
+# Local
+python find_location.py natick
+```
+
+**Interactive mode** (lists countries, states, then locations):
+
+```bash
+# Docker
+docker run --rm -it --entrypoint python ghcr.io/aserper/spark-mcp find_location.py
+
+# Local
+python find_location.py
+```
+
+Example output:
+
+```
+    ID  Name
+    --  ----
+  1588  Metrowest Academy of Jiu Jitsu (Natick)
+  6218  Villaris Martial Arts of Natick (Natick)
+```
+
+Use the `ID` value as your `SPARK_LOCATION_ID`.
 
 ## Tools
 
