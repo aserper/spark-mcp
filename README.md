@@ -23,28 +23,16 @@ Built by reverse-engineering the Spark Membership mobile app API.
 
 ## Setup
 
-### 1. Install
+### 1. Find your Location ID
+
+Your studio has a numeric location ID on the Spark platform. To find it, use the `login` tool interactively, or run:
 
 ```bash
-git clone https://github.com/yourusername/spark-mcp.git
-cd spark-mcp
-uv venv && source .venv/bin/activate
-uv pip install -e .
-```
-
-### 2. Find your Location ID
-
-Your studio has a numeric location ID on the Spark platform. To find it:
-
-```bash
-source .venv/bin/activate
 python -c "
 import asyncio, httpx
 async def find():
     base = 'https://mobileapi.sparkmembership.com/api/student/'
     async with httpx.AsyncClient(base_url=base, timeout=30) as c:
-        # List US states (use country ID 1 for US)
-        states = (await c.get('auth/states/1', headers={'Accept':'application/json'})).json().get('result',[])
         state = input('Enter state code (e.g. MA): ').strip().upper()
         locs = (await c.get(f'auth/locations/{state}', headers={'Accept':'application/json'})).json().get('result',[])
         for loc in locs:
@@ -53,9 +41,41 @@ asyncio.run(find())
 "
 ```
 
-### 3. Configure Claude Code
+### 2. Configure Claude Code
 
-Add to your project's `.mcp.json`:
+#### Docker (recommended)
+
+```json
+{
+  "mcpServers": {
+    "spark": {
+      "type": "stdio",
+      "command": "docker",
+      "args": ["run", "--rm", "-i",
+        "-e", "SPARK_EMAIL", "-e", "SPARK_PASSWORD", "-e", "SPARK_LOCATION_ID",
+        "spark-mcp"],
+      "env": {
+        "SPARK_EMAIL": "your-email@example.com",
+        "SPARK_PASSWORD": "your-password",
+        "SPARK_LOCATION_ID": "1234"
+      }
+    }
+  }
+}
+```
+
+Build the image first:
+
+```bash
+docker build -t spark-mcp .
+```
+
+#### Local install
+
+```bash
+uv venv && source .venv/bin/activate
+uv pip install -e .
+```
 
 ```json
 {
@@ -74,7 +94,7 @@ Add to your project's `.mcp.json`:
 }
 ```
 
-Or use the `login` tool manually without env vars.
+Credentials can also be omitted and provided via the `login` tool at runtime.
 
 ## Usage
 
