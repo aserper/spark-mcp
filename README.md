@@ -1,8 +1,60 @@
 # spark-mcp
 
-MCP server for the [Spark Membership](https://sparkmembership.com/) platform — a CRM used by martial arts studios. Lets you manage class scheduling, bookings, attendance, and more through any MCP client (e.g. Claude Code).
+MCP server for the [Spark Membership](https://sparkmembership.com/) platform — a CRM used by hundreds of martial arts studios. Manage class scheduling, bookings, attendance, and more through any MCP client (e.g. Claude Code).
 
 Built by reverse-engineering the Spark Membership mobile app API.
+
+## Quick Start (Docker)
+
+Docker is the preferred way to run spark-mcp — no Python install needed.
+
+**1. Pull the image:**
+
+```bash
+docker pull ghcr.io/aserper/spark-mcp:latest
+```
+
+**2. Add to your Claude Code config** (`.mcp.json` in your project root or `~/.claude/settings.json`):
+
+```json
+{
+  "mcpServers": {
+    "spark": {
+      "type": "stdio",
+      "command": "docker",
+      "args": ["run", "--rm", "-i",
+        "-e", "SPARK_EMAIL", "-e", "SPARK_PASSWORD", "-e", "SPARK_LOCATION_ID",
+        "ghcr.io/aserper/spark-mcp"],
+      "env": {
+        "SPARK_EMAIL": "your-email@example.com",
+        "SPARK_PASSWORD": "your-password",
+        "SPARK_LOCATION_ID": "1234"
+      }
+    }
+  }
+}
+```
+
+**3. Restart Claude Code** and start asking about your classes.
+
+## Finding your Location ID
+
+Every studio on Spark Membership has a numeric location ID. If you don't know yours, ask Claude after configuring the server (leave `SPARK_LOCATION_ID` empty) — or look it up with:
+
+```bash
+pip install httpx
+python -c "
+import asyncio, httpx
+async def find():
+    base = 'https://mobileapi.sparkmembership.com/api/student/'
+    async with httpx.AsyncClient(base_url=base, timeout=30) as c:
+        state = input('Enter state code (e.g. MA): ').strip().upper()
+        locs = (await c.get(f'auth/locations/{state}', headers={'Accept':'application/json'})).json().get('result',[])
+        for loc in locs:
+            print(f'  {loc[\"id\"]:>6}  {loc[\"name\"]}')
+asyncio.run(find())
+"
+```
 
 ## Tools
 
@@ -21,61 +73,29 @@ Built by reverse-engineering the Spark Membership mobile app API.
 | `announcements` | Get studio announcements |
 | `memberships` | Get membership status |
 
-## Setup
+## Usage Examples
 
-### 1. Find your Location ID
+Once configured, you can ask Claude things like:
 
-Your studio has a numeric location ID on the Spark platform. To find it, use the `login` tool interactively, or run:
+- "What classes are available this Saturday?"
+- "Book me into the 9am Ninjas class on March 21"
+- "What am I signed up for?"
+- "Cancel my Saturday booking"
+- "Show my attendance history"
+- "Any new announcements from the studio?"
 
-```bash
-python -c "
-import asyncio, httpx
-async def find():
-    base = 'https://mobileapi.sparkmembership.com/api/student/'
-    async with httpx.AsyncClient(base_url=base, timeout=30) as c:
-        state = input('Enter state code (e.g. MA): ').strip().upper()
-        locs = (await c.get(f'auth/locations/{state}', headers={'Accept':'application/json'})).json().get('result',[])
-        for loc in locs:
-            print(f\"  {loc['id']:>6}  {loc['name']}\")
-asyncio.run(find())
-"
-```
+## Alternative: Local Install
 
-### 2. Configure Claude Code
-
-#### Docker (recommended)
-
-```json
-{
-  "mcpServers": {
-    "spark": {
-      "type": "stdio",
-      "command": "docker",
-      "args": ["run", "--rm", "-i",
-        "-e", "SPARK_EMAIL", "-e", "SPARK_PASSWORD", "-e", "SPARK_LOCATION_ID",
-        "spark-mcp"],
-      "env": {
-        "SPARK_EMAIL": "your-email@example.com",
-        "SPARK_PASSWORD": "your-password",
-        "SPARK_LOCATION_ID": "1234"
-      }
-    }
-  }
-}
-```
-
-Build the image first:
+If you prefer not to use Docker:
 
 ```bash
-docker build -t spark-mcp .
-```
-
-#### Local install
-
-```bash
+git clone https://github.com/aserper/spark-mcp.git
+cd spark-mcp
 uv venv && source .venv/bin/activate
 uv pip install -e .
 ```
+
+Then configure Claude Code with:
 
 ```json
 {
@@ -94,22 +114,21 @@ uv pip install -e .
 }
 ```
 
-Credentials can also be omitted and provided via the `login` tool at runtime.
+## Authentication
 
-## Usage
+Credentials can be provided in three ways:
 
-Once configured, you can ask Claude things like:
+1. **Environment variables** (recommended) — set `SPARK_EMAIL`, `SPARK_PASSWORD`, and `SPARK_LOCATION_ID` in your MCP config. The server auto-authenticates on first tool call.
+2. **`login` tool** — call it manually at runtime without any env vars.
+3. **Mix** — set email/password in env vars and use `login` to switch locations.
 
-- "What classes are available this Saturday?"
-- "Book me into the 9am NINJAS class on March 21"
-- "What am I signed up for?"
-- "Show my attendance history"
+Tokens are automatically refreshed when they expire.
 
-## API
+## API Reference
 
-All endpoints hit `https://mobileapi.sparkmembership.com/api/student/`. Auth uses Bearer tokens with automatic refresh. See `api-discovery.md` for the full endpoint reference.
+All endpoints hit `https://mobileapi.sparkmembership.com/api/student/`. Auth uses Bearer tokens with automatic refresh. See [`api-discovery.md`](api-discovery.md) for the full endpoint reference.
 
 ## Requirements
 
-- Python 3.11+
+- Docker (preferred), or Python 3.11+
 - A Spark Membership account (through your studio's app)
