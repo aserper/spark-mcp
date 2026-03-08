@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+dist/
+build/
+.env
+decompiled/
+*.apk
+*.xapk
+xapk_extracted/
+.mcp.json
